@@ -31,7 +31,7 @@ paths = {
         ["Сборник", "Количество рассказов", "Общее количество страниц"],
     ],
     "Авторы": [
-        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author",
+        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId LEFT JOIN collections ON collections.id = books.collectionId",
         ["Автор", "Количество рассказов"],
     ],
     "Книги": [
@@ -163,9 +163,13 @@ class MainWindow(QWidget):
 
     def reload(self):
         path = self.path_input.text().split("/")
-        if (len(path) > 1 and path[1] != "Сборники") or path[0] not in paths.keys():
+        if (len(path) != 1 and not (len(path) == 2 and path[0] == "Сборники")) or path[0] not in paths.keys():
             self.alert = QMessageBox(QMessageBox.Icon.Critical, "Ошибка", "Неверный путь", QMessageBox.StandardButton.Discard, self)
             self.alert.show()
+            return
+        if path[0] == "Сборники" and len(path) == 2:
+            v = "collection" if self.select_on_collection.getValue() == 0 else "name"
+            self.tbl.setQuery(paths["Авторы"][0] + f" WHERE {v}=\"{path[1]}\"")
             return
         v = paths[self.path_input.text()]
         self.tbl.setQuery(v[0])
@@ -176,33 +180,15 @@ class MainWindow(QWidget):
             self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
 
     def openCollectionByRow(self, v: QModelIndex):
-        self.w = QWidget()
-        self.w.setGeometry(200, 200, 300, 200)
+        path = self.path_input.text().split("/")
+        if (len(path) > 1 and path[0] != "Сборники") or path[0] not in paths.keys():
+            print(123243)
+            return
         getCol = lambda column: self.tbl.sqlModel.data(
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
         )
-        l = QLabel(self.w)
-        self.w.setWindowTitle(getCol(0))
-        l.setText(
-            f"""Название сборника: {getCol(0)}\n"""
-            f"""К-во страниц: {getCol(1)}\n"""
-            f"""К-во рассказов: {getCol(2)}\n"""
-        )
-        self.w.show()
-
-    def openAuthorByRow(self, v: QModelIndex):
-        self.w = QWidget()
-        self.w.setGeometry(200, 200, 300, 200)
-        getCol = lambda column: self.tbl.sqlModel.data(
-            self.tbl1.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
-        )
-        l = QLabel(self.w)
-        self.w.setWindowTitle(getCol(0))
-        l.setText(
-            f"""Название сборника: {getCol(0)}\n"""
-            f"""К-во рассказов: {getCol(1)}\n"""
-        )
-        self.w.show()
+        self.path_input.setText(path[0] + "/" + getCol(0))
+        self.reload()
 
 
 if __name__ == "__main__":

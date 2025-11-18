@@ -31,6 +31,9 @@ class RadioListWidget(QVBoxLayout):
             self.__value = id
             if self.callback:
                 self.callback(self.__value)
+
+    def getValue(self):
+        return self.__value
     
     def setLabel(self, label):
         self.label.setText(label)
