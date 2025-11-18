@@ -8,19 +8,66 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QTabWidget,
     QVBoxLayout,
+    QHBoxLayout,
     QPushButton,
     QLabel,
+    QLineEdit,
+    QSpacerItem,
+    QSplitter,
+    QRadioButton,
+    QButtonGroup,
+    QSizePolicy
 )
-from PyQt6.QtCore import Qt, QModelIndex
 from DBTable import DBTableWidget
+from RadioList import RadioListWidget
+from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtSql import QSqlDatabase
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Вкладкомания 2.0")  # Заголовок окна
         self.setGeometry(100, 100, 800, 600)  # Размеры окна
+
+        self.tab1_layout = QVBoxLayout()
+
+        vertical_layout = QHBoxLayout()
+        btn_style = """
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                font-size: 24px;
+            }
+            QPushButton:hover {
+                color: blue;
+            }
+        """
+        back_btn = QPushButton("🡠")
+        h = back_btn.sizeHint().height() # Стандарная высота кнопки
+        back_btn.setFixedSize(h, h) # Делаем кнопку квадратной
+        back_btn.setStyleSheet(btn_style)
+        back_btn.clicked.connect(lambda: self.w.adjustSize())
+        vertical_layout.addWidget(back_btn)
+        reload_btn = QPushButton("⟳")
+        reload_btn.clicked.connect(lambda: print(self.w.minimumSize().width(), self.w.sizeHint().width(), self.w.width()))
+        reload_btn.setFixedSize(h, h) # Делаем кнопку квадратной
+        reload_btn.setStyleSheet(btn_style)
+        vertical_layout.addWidget(reload_btn)
+        l = QLineEdit("ghyhnbgfnfb/gtdhtrgf")
+        
+        l.setStyleSheet("""
+            QLineEdit {
+                border: 2px solid #dcdcdc;
+                border-radius: 10px;
+                padding: 8px 12px;
+                font-size: 14px;
+                background-color: #ffffff;
+                selection-background-color: #4CAF50;
+            }
+        """)
+        vertical_layout.addWidget(l)
+        self.tab1_layout.addLayout(vertical_layout)
         
         # Зададим тип базы данных
         self.db = QSqlDatabase.addDatabase('QSQLITE')
@@ -29,12 +76,7 @@ class MainWindow(QMainWindow):
         # И откроем подключение
         self.db.open()
 
-        self.tabs = QTabWidget()  # Создаем вкладки
-        self.setCentralWidget(self.tabs)
-
-        # region Сборники
-        self.collections_tab = QWidget()  # Создаем вкладку "Сборники"
-        self.tabs.addTab(self.collections_tab, "Сборники")
+        self.horizontal_layout = QSplitter()
 
         # Создаем таблицу
         self.tbl = DBTableWidget(
@@ -47,31 +89,28 @@ class MainWindow(QMainWindow):
         Qt_Horisontal = Qt.Orientation.Horizontal
         self.tbl.model().setHeaderData(0, Qt_Horisontal, "Название сборника")
         self.tbl.model().setHeaderData(1, Qt_Horisontal, "К-во страниц")
-        self.tbl.model().setHeaderData(2, Qt_Horisontal, "К-во книг")
+        self.tbl.model().setHeaderData(2, Qt_Horisontal, "К-во рассказов")
 
-        tab1_layout = QVBoxLayout()  # Центрируем её внутри вкладки
-        tab1_layout.addWidget(self.tbl)
-        self.collections_tab.setLayout(tab1_layout)
+        self.rlw = RadioListWidget("При открытии сборника", ["Открывать список авторов", "Открывать список рассказов"], lambda v: print(v))
+        self.rlw1 = RadioListWidget("При открытии автора", ["Открывать список сборников", "Открывать список рассказов"], lambda v: print(v))
 
-        # region Авторы
-        self.authors_tab = QWidget()  # Создаем вкладку "Авторы"
-        self.tabs.addTab(self.authors_tab, "Авторы")
+        self.modes_list = QVBoxLayout()
+        self.modes_list.addWidget(QPushButton("Сборники"))
+        self.modes_list.addWidget(QPushButton("Авторы"))
+        self.modes_list.addWidget(QPushButton("Рассказы"))
+        self.modes_list.addLayout(self.rlw)
+        self.modes_list.addLayout(self.rlw1)
+        self.modes_list.addStretch(1)
+        self.w = QWidget()
+        self.w.setLayout(self.modes_list)
+        self.horizontal_layout.addWidget(self.w)
+        self.horizontal_layout.addWidget(self.tbl)
+        
+        self.tab1_layout.addWidget(self.horizontal_layout)
 
-        # Создаем таблицу
-        self.tbl1 = DBTableWidget(
-            self.db,
-            "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author",
-        )  # Создаем таблицу
-        self.tbl1.clicked.connect(self.openAuthorByRow)
+        self.setLayout(self.tab1_layout)
 
-        # Установим заголовки столбцов
-        Qt_Horisontal = Qt.Orientation.Horizontal
-        self.tbl1.model().setHeaderData(0, Qt_Horisontal, "Имя автора")
-        self.tbl1.model().setHeaderData(1, Qt_Horisontal, "К-во произведений")
-
-        tab2_layout = QVBoxLayout()  # Центрируем её внутри вкладки
-        tab2_layout.addWidget(self.tbl1)
-        self.authors_tab.setLayout(tab2_layout)
+        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author"
 
     def openCollectionByRow(self, v: QModelIndex):
         self.w = QWidget()
@@ -84,7 +123,7 @@ class MainWindow(QMainWindow):
         l.setText(
             f"""Название сборника: {getCol(0)}\n"""
             f"""К-во страниц: {getCol(1)}\n"""
-            f"""К-во книг: {getCol(2)}\n"""
+            f"""К-во рассказов: {getCol(2)}\n"""
         )
         self.w.show()
 
@@ -98,7 +137,7 @@ class MainWindow(QMainWindow):
         self.w.setWindowTitle(getCol(0))
         l.setText(
             f"""Название сборника: {getCol(0)}\n"""
-            f"""К-во книг: {getCol(1)}\n"""
+            f"""К-во рассказов: {getCol(1)}\n"""
         )
         self.w.show()
 
