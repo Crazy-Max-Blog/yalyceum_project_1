@@ -16,7 +16,8 @@ from PyQt6.QtWidgets import (
     QSplitter,
     QRadioButton,
     QButtonGroup,
-    QSizePolicy
+    QSizePolicy,
+    QMessageBox
 )
 from DBTable import DBTableWidget
 from RadioList import RadioListWidget
@@ -27,10 +28,16 @@ from PyQt6.QtSql import QSqlDatabase
 paths = {
     "Сборники": [
         "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
-        ["Сборник", "Количество рассказов", "Общее количество страниц"]
+        ["Сборник", "Количество рассказов", "Общее количество страниц"],
     ],
-    "Авторы": "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author",
-    "Книги": "SELECT name, author, collection, pagesNum from books LEFT JOIN authors ON books.authorId = authors.id LEFT JOIN collections ON books.collectionId = collections.id",
+    "Авторы": [
+        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author",
+        ["Автор", "Количество рассказов"],
+    ],
+    "Книги": [
+        "SELECT name, author, collection, pagesNum, pageInCollection from books LEFT JOIN authors ON books.authorId = authors.id LEFT JOIN collections ON books.collectionId = collections.id",
+        ["Название", "Автор", "Сборник", "К-во страниц", "Номер страницы в сборнике"],
+    ],
 }
 
 
@@ -90,6 +97,7 @@ class MainWindow(QWidget):
                 selection-background-color: #4CAF50;
             }
         """)
+        self.path_input.returnPressed.connect(self.reload)
         path_layout.addWidget(self.path_input) # Добавляем поле в лейаут
 
         # Кнопка добавления
@@ -112,9 +120,26 @@ class MainWindow(QWidget):
 
         self.agregation_menu_layout = QVBoxLayout() # Лейаут для меню настроек отображения
         # Добавляем кнопки переключения отображения
-        self.agregation_menu_layout.addWidget(QPushButton("Сборники")) 
-        self.agregation_menu_layout.addWidget(QPushButton("Авторы"))
-        self.agregation_menu_layout.addWidget(QPushButton("Рассказы"))
+        btn_1 = QPushButton("Сборники")
+        def c_1():
+            self.path_input.setText("Сборники")
+            self.reload()
+        btn_1.clicked.connect(c_1)
+        self.agregation_menu_layout.addWidget(btn_1) 
+
+        btn_2 = QPushButton("Авторы")
+        def c_2():
+            self.path_input.setText("Авторы")
+            self.reload()
+        btn_2.clicked.connect(c_2)
+        self.agregation_menu_layout.addWidget(btn_2) 
+
+        btn_3 = QPushButton("Книги")
+        def c_3():
+            self.path_input.setText("Книги")
+            self.reload()
+        btn_3.clicked.connect(c_3)
+        self.agregation_menu_layout.addWidget(btn_3) 
 
         # Меню настроек отображения
         self.select_on_collection = RadioListWidget(
@@ -137,6 +162,11 @@ class MainWindow(QWidget):
         self.tbl.clicked.connect(self.openCollectionByRow) # Подключаем обработчик нажатия на строчку
 
     def reload(self):
+        path = self.path_input.text().split("/")
+        if (len(path) > 1 and path[1] != "Сборники") or path[0] not in paths.keys():
+            self.alert = QMessageBox(QMessageBox.Icon.Critical, "Ошибка", "Неверный путь", QMessageBox.StandardButton.Discard, self)
+            self.alert.show()
+            return
         v = paths[self.path_input.text()]
         self.tbl.setQuery(v[0])
 
