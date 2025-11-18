@@ -14,16 +14,15 @@ class RadioListWidget(QVBoxLayout):
         self.label = QLabel(label)
         self.addWidget(self.label)
         self.label.adjustSize()
-        print(self.label.width())
         self.__value = 0
         self.button_group = QButtonGroup(self)
         self.btns = []
-        for i, button in enumerate(buttons):
-            self.btns.append(QRadioButton(button))
-            self.addWidget(self.btns[i])
-            self.button_group.addButton(self.btns[i], i)
-            self.btns[i].adjustSize()
-            print(self.btns[i].width())
+        if buttons:
+            for i, button in enumerate(buttons):
+                self.btns.append(QRadioButton(button))
+                self.addWidget(self.btns[i])
+                self.button_group.addButton(self.btns[i], i)
+            self.btns[0].setChecked(True)
         self.setCallback(callback)
     
     def onClick(self, v): 

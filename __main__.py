@@ -24,15 +24,38 @@ from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtSql import QSqlDatabase
 
 
+paths = {
+    "Сборники": {
+        "querty": "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
+        "additional": ""
+    },
+    "Авторы": {
+        "querty": "",
+        "additional_value": "WHERE author="
+    },
+    "Книги": {
+        "querty": "",
+        "additional_value": "WHERE collection="
+    },
+}
+
+
 class MainWindow(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, db, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Вкладкомания 2.0")  # Заголовок окна
+        self.setWindowTitle("Домашняя библиотека")  # Заголовок окна
         self.setGeometry(100, 100, 800, 600)  # Размеры окна
 
-        self.tab1_layout = QVBoxLayout()
+        self.db = db
 
-        vertical_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout() # Главный лейаут
+        self.setLayout(self.main_layout) # Устанавливаем главный лейаут
+
+        # region path layout
+        path_layout = QHBoxLayout() # Лейаут строки пути
+        self.main_layout.addLayout(path_layout)
+
+        # Стиль для кнопок без фона
         btn_style = """
             QPushButton {
                 background-color: transparent;
@@ -43,19 +66,30 @@ class MainWindow(QWidget):
                 color: blue;
             }
         """
+
+        h = QPushButton().sizeHint().height() # Стандарная высота кнопки
+
+        # Кнопка назад
         back_btn = QPushButton("🡠")
-        h = back_btn.sizeHint().height() # Стандарная высота кнопки
         back_btn.setFixedSize(h, h) # Делаем кнопку квадратной
-        back_btn.setStyleSheet(btn_style)
-        back_btn.clicked.connect(lambda: self.w.adjustSize())
-        vertical_layout.addWidget(back_btn)
+        back_btn.setStyleSheet(btn_style) # Устанавливаем стиль
+        # back_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        path_layout.addWidget(back_btn) # Добавляем кнопку в лейаут
+
+        # Кнопка перезагрузки данных
         reload_btn = QPushButton("⟳")
-        reload_btn.clicked.connect(lambda: print(self.w.minimumSize().width(), self.w.sizeHint().width(), self.w.width()))
         reload_btn.setFixedSize(h, h) # Делаем кнопку квадратной
-        reload_btn.setStyleSheet(btn_style)
-        vertical_layout.addWidget(reload_btn)
+        reload_btn.setStyleSheet(btn_style) # Устанавливаем стиль
+        reload_btn.clicked.connect(
+            lambda: print(
+                self.w.minimumSize().width(), self.w.sizeHint().width(), self.w.width()
+            )
+        )  # Подключаем обработчик нажатия
+        path_layout.addWidget(reload_btn) # Добавляем кнопку в лейаут
+
+        # Поле для ввода пути
         l = QLineEdit("ghyhnbgfnfb/gtdhtrgf")
-        
+        # Установим стиль для поля ввода
         l.setStyleSheet("""
             QLineEdit {
                 border: 2px solid #dcdcdc;
@@ -66,49 +100,57 @@ class MainWindow(QWidget):
                 selection-background-color: #4CAF50;
             }
         """)
-        vertical_layout.addWidget(l)
-        self.tab1_layout.addLayout(vertical_layout)
-        
-        # Зададим тип базы данных
-        self.db = QSqlDatabase.addDatabase('QSQLITE')
-        # Укажем имя базы данных
-        self.db.setDatabaseName("db.db")
-        # И откроем подключение
-        self.db.open()
+        path_layout.addWidget(l) # Добавляем поле в лейаут
 
-        self.horizontal_layout = QSplitter()
+        # Кнопка добавления
+        add_btn = QPushButton("+")
+        add_btn.setFixedSize(h, h) # Делаем кнопку квадратной
+        add_btn.setStyleSheet(btn_style) # Устанавливаем стиль
+        # add_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        path_layout.addWidget(add_btn) # Добавляем кнопку в лейаут
+
+        # Кнопка инфо
+        info_btn = QPushButton("🛈")
+        info_btn.setFixedSize(h, h) # Делаем кнопку квадратной
+        info_btn.setStyleSheet(btn_style) # Устанавливаем стиль
+        info_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        path_layout.addWidget(info_btn) # Добавляем кнопку в лейаут
+
+        # region down group
+        self.down_group = QSplitter() # Нижняя группа - блок с настройками отображения и таблицей, с передвигающимся раздилителем
+        self.main_layout.addWidget(self.down_group) # Добавляем в главный лейаут
+
+        self.agregation_menu_layout = QVBoxLayout() # Лейаут для меню настроек отображения
+        # Добавляем кнопки переключения отображения
+        self.agregation_menu_layout.addWidget(QPushButton("Сборники")) 
+        self.agregation_menu_layout.addWidget(QPushButton("Авторы"))
+        self.agregation_menu_layout.addWidget(QPushButton("Рассказы"))
+
+        # Меню настроек отображения
+        self.select_on_collection = RadioListWidget(
+            "При открытии сборника:",
+            ["Открывать список авторов", "Открывать список рассказов"],
+            lambda v: print(v),
+        )
+        self.agregation_menu_layout.addLayout(self.select_on_collection) # Добавляем в лейаут
+        self.agregation_menu_layout.addStretch(1) # Оставшееся место заполняем пустотой, чтобы сжать всё
+
+        # Добавляем лейаут настроек в нижнюю группу
+        self.w = QWidget()
+        self.w.setLayout(self.agregation_menu_layout)
+        self.down_group.addWidget(self.w)
 
         # Создаем таблицу
-        self.tbl = DBTableWidget(
-            self.db,
-            "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
-        )  # Создаем таблицу
-        self.tbl.clicked.connect(self.openCollectionByRow)
+        self.tbl = DBTableWidget(self.db)
+        self.down_group.addWidget(self.tbl) # Добавляем таблицу в нижнюю группу
+        self.tbl.setQuery("SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection")
+        self.tbl.clicked.connect(self.openCollectionByRow) # Подключаем обработчик нажатия на строчку
 
         # Установим заголовки столбцов
         Qt_Horisontal = Qt.Orientation.Horizontal
         self.tbl.model().setHeaderData(0, Qt_Horisontal, "Название сборника")
         self.tbl.model().setHeaderData(1, Qt_Horisontal, "К-во страниц")
         self.tbl.model().setHeaderData(2, Qt_Horisontal, "К-во рассказов")
-
-        self.rlw = RadioListWidget("При открытии сборника", ["Открывать список авторов", "Открывать список рассказов"], lambda v: print(v))
-        self.rlw1 = RadioListWidget("При открытии автора", ["Открывать список сборников", "Открывать список рассказов"], lambda v: print(v))
-
-        self.modes_list = QVBoxLayout()
-        self.modes_list.addWidget(QPushButton("Сборники"))
-        self.modes_list.addWidget(QPushButton("Авторы"))
-        self.modes_list.addWidget(QPushButton("Рассказы"))
-        self.modes_list.addLayout(self.rlw)
-        self.modes_list.addLayout(self.rlw1)
-        self.modes_list.addStretch(1)
-        self.w = QWidget()
-        self.w.setLayout(self.modes_list)
-        self.horizontal_layout.addWidget(self.w)
-        self.horizontal_layout.addWidget(self.tbl)
-        
-        self.tab1_layout.addWidget(self.horizontal_layout)
-
-        self.setLayout(self.tab1_layout)
 
         "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author"
 
@@ -144,6 +186,12 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    table = MainWindow()
+    # Зададим тип базы данных
+    db = QSqlDatabase.addDatabase('QSQLITE')
+    # Укажем имя базы данных
+    db.setDatabaseName("db.db")
+    # И откроем подключение
+    db.open()
+    table = MainWindow(db)
     table.show()
     sys.exit(app.exec())

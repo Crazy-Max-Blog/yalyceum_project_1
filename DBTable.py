@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QAbstractTableModel, QSortFilterProxyModel
 from PyQt6.QtSql import QSqlDatabase, QSqlQueryModel
          
 class DBTableWidget(QTableView):
-    def __init__(self, db, query="", parent=None):
+    def __init__(self, db, query=None, parent=None):
         super().__init__(parent)
 
         self.db = db
@@ -22,9 +22,11 @@ class DBTableWidget(QTableView):
     
     def setDB(self, db):
         self.db = db
+        self.connectDB()
     
     def setQuery(self, query):
         self.query = query
+        self.connectDB()
     
     def connectDB(self):
         # Создадим модельку
