@@ -25,18 +25,12 @@ from PyQt6.QtSql import QSqlDatabase
 
 
 paths = {
-    "Сборники": {
-        "querty": "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
-        "additional": ""
-    },
-    "Авторы": {
-        "querty": "",
-        "additional_value": "WHERE author="
-    },
-    "Книги": {
-        "querty": "",
-        "additional_value": "WHERE collection="
-    },
+    "Сборники": [
+        "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
+        ["Сборник", "Количество рассказов", "Общее количество страниц"]
+    ],
+    "Авторы": "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author",
+    "Книги": "SELECT name, author, collection, pagesNum from books LEFT JOIN authors ON books.authorId = authors.id LEFT JOIN collections ON books.collectionId = collections.id",
 }
 
 
@@ -80,17 +74,13 @@ class MainWindow(QWidget):
         reload_btn = QPushButton("⟳")
         reload_btn.setFixedSize(h, h) # Делаем кнопку квадратной
         reload_btn.setStyleSheet(btn_style) # Устанавливаем стиль
-        reload_btn.clicked.connect(
-            lambda: print(
-                self.w.minimumSize().width(), self.w.sizeHint().width(), self.w.width()
-            )
-        )  # Подключаем обработчик нажатия
+        reload_btn.clicked.connect(self.reload)  # Подключаем обработчик нажатия
         path_layout.addWidget(reload_btn) # Добавляем кнопку в лейаут
 
         # Поле для ввода пути
-        l = QLineEdit("ghyhnbgfnfb/gtdhtrgf")
+        self.path_input = QLineEdit("ghyhnbgfnfb/gtdhtrgf")
         # Установим стиль для поля ввода
-        l.setStyleSheet("""
+        self.path_input.setStyleSheet("""
             QLineEdit {
                 border: 2px solid #dcdcdc;
                 border-radius: 10px;
@@ -100,7 +90,7 @@ class MainWindow(QWidget):
                 selection-background-color: #4CAF50;
             }
         """)
-        path_layout.addWidget(l) # Добавляем поле в лейаут
+        path_layout.addWidget(self.path_input) # Добавляем поле в лейаут
 
         # Кнопка добавления
         add_btn = QPushButton("+")
@@ -143,16 +133,17 @@ class MainWindow(QWidget):
         # Создаем таблицу
         self.tbl = DBTableWidget(self.db)
         self.down_group.addWidget(self.tbl) # Добавляем таблицу в нижнюю группу
-        self.tbl.setQuery("SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection")
+        #self.tbl.setQuery("SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection")
         self.tbl.clicked.connect(self.openCollectionByRow) # Подключаем обработчик нажатия на строчку
+
+    def reload(self):
+        v = paths[self.path_input.text()]
+        self.tbl.setQuery(v[0])
 
         # Установим заголовки столбцов
         Qt_Horisontal = Qt.Orientation.Horizontal
-        self.tbl.model().setHeaderData(0, Qt_Horisontal, "Название сборника")
-        self.tbl.model().setHeaderData(1, Qt_Horisontal, "К-во страниц")
-        self.tbl.model().setHeaderData(2, Qt_Horisontal, "К-во рассказов")
-
-        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId GROUP BY author"
+        for ind, header in enumerate(v[1]):
+            self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
 
     def openCollectionByRow(self, v: QModelIndex):
         self.w = QWidget()
