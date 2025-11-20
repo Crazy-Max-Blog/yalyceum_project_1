@@ -44,10 +44,11 @@ paths = {
 class MainWindow(QWidget):
     def __init__(self, db, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Домашняя библиотека")  # Заголовок окна
-        self.setGeometry(100, 100, 800, 600)  # Размеры окна
 
         self.db = db
+        
+        self.setWindowTitle("Домашняя библиотека")  # Заголовок окна
+        self.setGeometry(100, 100, 800, 600)  # Размеры окна
 
         self.main_layout = QVBoxLayout() # Главный лейаут
         self.setLayout(self.main_layout) # Устанавливаем главный лейаут
@@ -74,7 +75,11 @@ class MainWindow(QWidget):
         back_btn = QPushButton("🡠")
         back_btn.setFixedSize(h, h) # Делаем кнопку квадратной
         back_btn.setStyleSheet(btn_style) # Устанавливаем стиль
-        # back_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        def go_back():
+            t = self.path_input.text()
+            self.path_input.setText('/'.join(t.split("/")[:-1]) if t.count("/") > 0 else t)
+            self.reload()
+        back_btn.clicked.connect(go_back) # Подключаем обработчик нажатия
         path_layout.addWidget(back_btn) # Добавляем кнопку в лейаут
 
         # Кнопка перезагрузки данных
@@ -85,7 +90,7 @@ class MainWindow(QWidget):
         path_layout.addWidget(reload_btn) # Добавляем кнопку в лейаут
 
         # Поле для ввода пути
-        self.path_input = QLineEdit("ghyhnbgfnfb/gtdhtrgf")
+        self.path_input = QLineEdit("")
         # Установим стиль для поля ввода
         self.path_input.setStyleSheet("""
             QLineEdit {
@@ -111,7 +116,11 @@ class MainWindow(QWidget):
         info_btn = QPushButton("🛈")
         info_btn.setFixedSize(h, h) # Делаем кнопку квадратной
         info_btn.setStyleSheet(btn_style) # Устанавливаем стиль
-        info_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        self.info_window = QMainWindow()
+        QLabel("Hello", self.info_window)
+        def info():
+            self.info_window.show()
+        info_btn.clicked.connect(info) # Подключаем обработчик нажатия
         path_layout.addWidget(info_btn) # Добавляем кнопку в лейаут
 
         # region down group
