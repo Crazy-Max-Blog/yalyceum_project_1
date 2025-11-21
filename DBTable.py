@@ -52,7 +52,7 @@ class DBTableWidget(QTableView):
         self.setModel(self.proxyModel)
 
     def loadData(self):
-        if not self.dbname:
+        if not self.db:
             return
 
         self.sqlModel.setQuery(self.query, self.db)
