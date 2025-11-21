@@ -160,9 +160,9 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    if not os.path.isfile("db.db"):
+    if not os.path.isfile("settings.json"):
         # Первый запуск
-        i = InfoWindow()
+        i = SelectLangWindow()
         i.show()
         app.exec()
     # Зададим тип базы данных
