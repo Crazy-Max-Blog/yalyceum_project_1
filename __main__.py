@@ -98,7 +98,7 @@ class MainWindow(QWidget):
         btn_2.clicked.connect(lambda: path_module.set(self, "authors"))
         self.agregation_menu_layout.addWidget(btn_2)
 
-        btn_3 = QPushButton("Книги")
+        btn_3 = QPushButton("Рассказы")
         btn_3.clicked.connect(lambda: path_module.set(self, "books"))
         self.agregation_menu_layout.addWidget(btn_3)
 
