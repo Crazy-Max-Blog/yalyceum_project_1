@@ -36,7 +36,7 @@ class DBTableWidget(QTableView):
 
     def setQuery(self, query):
         self.query = query
-        self.connectDB()
+        self.sqlModel.setQuery(self.query, self.db)
 
     def connectDB(self):
         # Создадим модельку
