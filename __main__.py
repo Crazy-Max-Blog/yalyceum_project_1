@@ -104,27 +104,14 @@ class MainWindow(QWidget):
         # Добавляем кнопки переключения отображения
         btn_1 = QPushButton("Сборники")
 
-        def c_1():
-            self.path_input.setText("Сборники")
-            self.reload()
-
         btn_1.clicked.connect(lambda: path_module.set(self, "collections"))
         self.agregation_menu_layout.addWidget(btn_1)
+
         btn_2 = QPushButton("Авторы")
-
-        def c_2():
-            self.path_input.setText("Авторы")
-            self.reload()
-
         btn_2.clicked.connect(lambda: path_module.set(self, "authors"))
         self.agregation_menu_layout.addWidget(btn_2)
 
         btn_3 = QPushButton("Книги")
-
-        def c_3():
-            self.path_input.setText("Книги")
-            self.reload()
-
         btn_3.clicked.connect(lambda: path_module.set(self, "books"))
         self.agregation_menu_layout.addWidget(btn_3)
 
@@ -134,12 +121,10 @@ class MainWindow(QWidget):
             ["Открывать список авторов", "Открывать список рассказов"],
             lambda v: print(v),
         )
-        self.agregation_menu_layout.addLayout(
-            self.select_on_collection
-        )  # Добавляем в лейаут
-        self.agregation_menu_layout.addStretch(
-            1
-        )  # Оставшееся место заполняем пустотой, чтобы сжать всё
+        # Добавляем в лейаут
+        self.agregation_menu_layout.addLayout(self.select_on_collection)
+        # Оставшееся место заполняем пустотой, чтобы сжать всё
+        self.agregation_menu_layout.addStretch(1)
 
         # Добавляем лейаут настроек в нижнюю группу
         self.w = QWidget()
@@ -149,7 +134,6 @@ class MainWindow(QWidget):
         # Создаем таблицу
         self.tbl = DBTableWidget(self.db)
         self.down_group.addWidget(self.tbl)  # Добавляем таблицу в нижнюю группу
-        # self.tbl.setQuery("SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection")
         self.tbl.clicked.connect(
             self.tblClickRow
         )  # Подключаем обработчик нажатия на строчку
@@ -185,18 +169,6 @@ class MainWindow(QWidget):
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
         )
         path_module.open(self, getCol(0))
-        return
-    """
-        path_module = self.path_input.text().split("/")
-        if (len(path_module) > 1 and path_module[0] != "Сборники") or path_module[0] not in requries.paths.keys():
-            print(123243)
-            return
-        getCol = lambda column: self.tbl.sqlModel.data(
-            self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
-        )
-        self.path_input.setText(path_module[0] + "/" + getCol(0))
-        self.reload()
-        """
 
 
 if __name__ == "__main__":
