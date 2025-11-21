@@ -24,7 +24,7 @@ from selectLang import SelectLangWindow
 
 import styles
 
-import requries
+import queries
 
 import path_module
 
@@ -158,7 +158,7 @@ class MainWindow(QWidget):
         path = self.path_input.text().split("/")
         if (len(path) != 1 and not (len(path) == 2 and path[0] == "Сборники")) or path[
             0
-        ] not in requries.paths.keys():
+        ] not in queries.paths.keys():
             self.alert = QMessageBox(
                 QMessageBox.Icon.Critical,
                 "Ошибка",
@@ -170,9 +170,9 @@ class MainWindow(QWidget):
             return
         if path[0] == "Сборники" and len(path) == 2:
             v = "collection" if self.select_on_collection.getValue() == 0 else "name"
-            self.tbl.setQuery(requries.paths["Авторы"][0] + f' WHERE {v}="{path[1]}"')
+            self.tbl.setQuery(queries.paths["Авторы"][0] + f' WHERE {v}="{path[1]}"')
             return
-        v = requries.paths[self.path_input.text()]
+        v = queries.paths[self.path_input.text()]
         self.tbl.setQuery(v[0])
 
         # Установим заголовки столбцов
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     db.open()
     # Создадим таблицы, если они не существуют
     query = QSqlQuery()
-    for i in requries.create:
+    for i in queries.create:
         query.exec(i)
     # Создадим главное окно
     table = MainWindow(db)

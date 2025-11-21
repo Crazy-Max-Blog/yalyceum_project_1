@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS books (
 
 paths = {
     "collections": [
-        "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection",
+        "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId LEFT JOIN authors ON books.authorId = authors.id GROUP BY collection",
         ["Сборник", "Количество рассказов", "Общее количество страниц"],
     ],
     "authors": [
