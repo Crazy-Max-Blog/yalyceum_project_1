@@ -29,3 +29,4 @@ class SelectLangWindow(QWidget):
     def next(self):
         with open("settings.json", "w") as f:
             f.write(json.dumps({"lang": ["ru", "eng"][self.language_list.getValue()]}))
+        self.close()
