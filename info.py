@@ -13,7 +13,7 @@ class InfoWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Инфо")
-        self.setGeometry(200, 200, 400, 400)
+        self.setGeometry(400, 300, 400, 400)
         layout = QVBoxLayout(self)
         self.setLayout(layout)
         text_browser = QTextBrowser()

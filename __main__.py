@@ -168,9 +168,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     if not os.path.isfile("settings.json"):
         # Первый запуск
-        i = SelectLangWindow()
-        i.show()
+        langSelector = SelectLangWindow()
+        langSelector.show()
         app.exec()
+        infoWindow = InfoWindow()
+        infoWindow.show()
+
     # Зададим тип базы данных
     db = QSqlDatabase.addDatabase("QSQLITE")
     # Укажем имя базы данных
