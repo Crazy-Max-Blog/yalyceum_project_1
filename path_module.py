@@ -1,4 +1,4 @@
-import requries
+import queries
 from PyQt6.QtCore import Qt
 
 _table = ""
@@ -17,7 +17,7 @@ tableToColumn = {
 }
 
 def getQuery():
-    tblQuery = requries.paths[_table][0].split(" GROUP BY ")
+    tblQuery = queries.paths[_table][0].split(" GROUP BY ")
     result = tblQuery[0]
     if _args != []:
         result += f" WHERE {tableToColumn[_args[0][0]]}=\"{_args[0][1]}\""
@@ -43,7 +43,7 @@ def set(self, tbl, args=[]):
 
     # Установим заголовки столбцов
     Qt_Horisontal = Qt.Orientation.Horizontal
-    for ind, header in enumerate(requries.paths[_table][1]):
+    for ind, header in enumerate(queries.paths[_table][1]):
         self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
     
     self.path_input.setText(getText())
