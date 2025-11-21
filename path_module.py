@@ -57,4 +57,3 @@ def open(self, name):
         new_table = "books"
         new_arg = (_table, name)
         set(self, new_table, [new_arg] + _args)
-    print(getQuery())
