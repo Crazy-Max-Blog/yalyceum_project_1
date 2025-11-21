@@ -73,6 +73,7 @@ class MainWindow(QWidget):
         self.path_input = QLineEdit("")
         # Установим стиль для поля ввода
         self.path_input.setStyleSheet(styles.line_edit)
+        self.path_input.setEnabled(False)
         self.path_input.returnPressed.connect(self.reload)
         path_layout.addWidget(self.path_input)  # Добавляем поле в лейаут
 
