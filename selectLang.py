@@ -11,7 +11,7 @@ from RadioList import RadioListWidget
 class SelectLangWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Приветствие")
+        self.setWindowTitle("Welcome")
         self.btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         self.language_list = RadioListWidget(
             "Выберите язык / Select language:", ["Русский", "English"]
