@@ -165,6 +165,9 @@ class MainWindow(QWidget):
             self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
 
     def tblClickRow(self, v: QModelIndex):
+        if path_module._table == "books":
+            print("book")
+            return
         getCol = lambda column: self.tbl.sqlModel.data(
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
         )
