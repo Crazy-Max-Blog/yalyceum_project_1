@@ -3,37 +3,44 @@ from PyQt6.QtCore import Qt
 
 _table = ""
 _args = []
+
+
 def _setTable(new_table):
     global _table, _args
     _table = new_table
     _args = []
 
+
 def _addArg(name, value):
     _args.append((name, value))
+
 
 tableToColumn = {
     "authors": "author",
     "collections": "collection",
 }
 
+
 def getQuery():
-    tblQuery = queries.paths[_table][0].split(" GROUP BY ")
+    tblQuery = queries.tables[_table][0].split(" GROUP BY ")
     result = tblQuery[0]
     if _args != []:
-        result += f" WHERE {tableToColumn[_args[0][0]]}=\"{_args[0][1]}\""
+        result += f' WHERE {tableToColumn[_args[0][0]]}="{_args[0][1]}"'
         for arg in _args[1:]:
-            result += f" AND {tableToColumn[arg[0]]}=\"{arg[1]}\""
+            result += f' AND {tableToColumn[arg[0]]}="{arg[1]}"'
     if len(tblQuery) == 2:
         result += " GROUP BY " + tblQuery[1]
     return result
 
+
 def getText():
     result = _table
     if _args != []:
-        result += f" WHERE {_args[0][0]} = \"{_args[0][1]}\""
+        result += f' WHERE {_args[0][0]} = "{_args[0][1]}"'
         for arg in _args[1:]:
-            result += f" AND {arg[0]} = \"{arg[1]}\""
+            result += f' AND {arg[0]} = "{arg[1]}"'
     return result
+
 
 def set(self, tbl, args=[]):
     global _args
@@ -43,10 +50,11 @@ def set(self, tbl, args=[]):
 
     # Установим заголовки столбцов
     Qt_Horisontal = Qt.Orientation.Horizontal
-    for ind, header in enumerate(queries.paths[_table][1]):
+    for ind, header in enumerate(queries.tables[_table][1]):
         self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
-    
+
     self.path_input.setText(getText())
+
 
 def open(self, name):
     if _args == []:

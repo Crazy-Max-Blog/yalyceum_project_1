@@ -1,3 +1,4 @@
+# Список запросов для создания таблиц
 create = [
     """
 CREATE TABLE IF NOT EXISTS authors (
@@ -24,7 +25,8 @@ CREATE TABLE IF NOT EXISTS books (
 );""",
 ]
 
-paths = {
+# Список запросов для заполнения таблиц, а также заголовки столбцов
+tables = {
     "collections": [
         "SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId LEFT JOIN authors ON books.authorId = authors.id GROUP BY collection",
         ["Сборник", "Количество рассказов", "Общее количество страниц"],

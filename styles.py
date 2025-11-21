@@ -11,7 +11,8 @@ text_btn = """
     }
 """
 
-line_edit = """
+# Стиль для поля пути
+line_path = """
     QLineEdit {
         border: 2px solid #dcdcdc;
         border-radius: 10px;

@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLineEdit,
     QSplitter,
-    QMessageBox,
 )
 
 from DBTable import DBTableWidget
@@ -57,7 +56,7 @@ class MainWindow(QWidget):
             self.path_input.setText(
                 "/".join(t.split("/")[:-1]) if t.count("/") > 0 else t
             )
-            self.reload()
+            self.tblReload()
 
         back_btn.clicked.connect(go_back)  # Подключаем обработчик нажатия
         path_layout.addWidget(back_btn)  # Добавляем кнопку в лейаут
@@ -66,15 +65,15 @@ class MainWindow(QWidget):
         reload_btn = QPushButton("⟳")
         reload_btn.setFixedSize(h, h)  # Делаем кнопку квадратной
         reload_btn.setStyleSheet(styles.text_btn)  # Устанавливаем стиль
-        reload_btn.clicked.connect(self.reload)  # Подключаем обработчик нажатия
+        reload_btn.clicked.connect(self.tblReload)  # Подключаем обработчик нажатия
         path_layout.addWidget(reload_btn)  # Добавляем кнопку в лейаут
 
         # Поле для ввода пути
         self.path_input = QLineEdit("")
         # Установим стиль для поля ввода
-        self.path_input.setStyleSheet(styles.line_edit)
+        self.path_input.setStyleSheet(styles.line_path)
         self.path_input.setEnabled(False)
-        self.path_input.returnPressed.connect(self.reload)
+        self.path_input.returnPressed.connect(self.tblReload)
         path_layout.addWidget(self.path_input)  # Добавляем поле в лейаут
 
         # Кнопка добавления
@@ -139,44 +138,19 @@ class MainWindow(QWidget):
         # Создаем таблицу
         self.tbl = DBTableWidget(self.db)
         self.down_group.addWidget(self.tbl)  # Добавляем таблицу в нижнюю группу
-        self.tbl.clicked.connect(
-            self.tblClickRow
-        )  # Подключаем обработчик нажатия на строчку
+        # Подключаем обработчик нажатия на строчку
+        self.tbl.clicked.connect(self.tblClickRow)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)  # Вызываем базовый метод (пусть будет)
         # Ширина панели настроек и таблицы: у панели ширина дойдёт до минимального
         self.down_group.setSizes([0, self.width()])
 
-    def reload(self):
-        path = self.path_input.text().split("/")
-        if (len(path) != 1 and not (len(path) == 2 and path[0] == "Сборники")) or path[
-            0
-        ] not in queries.paths.keys():
-            self.alert = QMessageBox(
-                QMessageBox.Icon.Critical,
-                "Ошибка",
-                "Неверный путь",
-                QMessageBox.StandardButton.Discard,
-                self,
-            )
-            self.alert.show()
-            return
-        if path[0] == "Сборники" and len(path) == 2:
-            v = "collection" if self.select_on_collection.getValue() == 0 else "name"
-            self.tbl.setQuery(queries.paths["Авторы"][0] + f' WHERE {v}="{path[1]}"')
-            return
-        v = queries.paths[self.path_input.text()]
-        self.tbl.setQuery(v[0])
-
-        # Установим заголовки столбцов
-        Qt_Horisontal = Qt.Orientation.Horizontal
-        for ind, header in enumerate(v[1]):
-            self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
+    def tblReload(self):
+        self.tbl.loadData()
 
     def tblClickRow(self, v: QModelIndex):
         if path_module._table == "books":
-            print("book")
             return
         getCol = lambda column: self.tbl.sqlModel.data(
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
