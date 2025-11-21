@@ -32,8 +32,8 @@ tables = {
         ["Сборник", "Количество рассказов", "Общее количество страниц"],
     ],
     "authors": [
-        "SELECT author, COUNT(books.name) from authors LEFT JOIN books ON authors.id = books.authorId LEFT JOIN collections ON collections.id = books.collectionId GROUP BY author",
-        ["Автор", "Количество рассказов"],
+        "SELECT author, COUNT(books.name), COUNT(DISTINCT collections.collection) from authors LEFT JOIN books ON authors.id = books.authorId LEFT JOIN collections ON collections.id = books.collectionId GROUP BY author",
+        ["Автор", "К-во рассказов", "К-во сборников"],
     ],
     "books": [
         "SELECT name, author, collection, pagesNum, pageInCollection from books LEFT JOIN authors ON books.authorId = authors.id LEFT JOIN collections ON books.collectionId = collections.id",
