@@ -46,21 +46,6 @@ class MainWindow(QWidget):
 
         h = QPushButton().sizeHint().height()  # Стандарная высота кнопки
 
-        # Кнопка назад
-        back_btn = QPushButton("🡠")
-        back_btn.setFixedSize(h, h)  # Делаем кнопку квадратной
-        back_btn.setStyleSheet(styles.text_btn)  # Устанавливаем стиль
-
-        def go_back():
-            t = self.path_input.text()
-            self.path_input.setText(
-                "/".join(t.split("/")[:-1]) if t.count("/") > 0 else t
-            )
-            self.tblReload()
-
-        back_btn.clicked.connect(go_back)  # Подключаем обработчик нажатия
-        path_layout.addWidget(back_btn)  # Добавляем кнопку в лейаут
-
         # Кнопка перезагрузки данных
         reload_btn = QPushButton("⟳")
         reload_btn.setFixedSize(h, h)  # Делаем кнопку квадратной
