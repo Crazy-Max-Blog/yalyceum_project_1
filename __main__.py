@@ -96,6 +96,8 @@ class MainWindow(QWidget):
 
         # Нижняя группа - блок с настройками отображения и таблицей, с передвигающимся раздилителем
         self.down_group = QSplitter()
+        # Не позволяем дочерним элементам сжиматься до 0
+        self.down_group.setChildrenCollapsible(False)
         self.main_layout.addWidget(self.down_group)  # Добавляем в главный лейаут
 
         # Лейаут для меню настроек отображения
@@ -127,9 +129,11 @@ class MainWindow(QWidget):
         self.agregation_menu_layout.addStretch(1)
 
         # Добавляем лейаут настроек в нижнюю группу
-        self.w = QWidget()
-        self.w.setLayout(self.agregation_menu_layout)
-        self.down_group.addWidget(self.w)
+        self.agregation_menu = QWidget()
+        self.agregation_menu.setLayout(self.agregation_menu_layout)
+        self.agregation_menu.adjustSize()  # Устанавливаем размер виджета настроек
+        # Добавляем виджет настроек в нижнюю группу
+        self.down_group.addWidget(self.agregation_menu)
 
         # Создаем таблицу
         self.tbl = DBTableWidget(self.db)
@@ -137,6 +141,11 @@ class MainWindow(QWidget):
         self.tbl.clicked.connect(
             self.tblClickRow
         )  # Подключаем обработчик нажатия на строчку
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)  # Вызываем базовый метод (пусть будет)
+        # Ширина панели настроек и таблицы: у панели ширина дойдёт до минимального
+        self.down_group.setSizes([0, self.width()])
 
     def reload(self):
         path = self.path_input.text().split("/")
