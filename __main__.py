@@ -26,6 +26,8 @@ import styles
 
 import requries
 
+import path_module
+
 
 class MainWindow(QWidget):
     def __init__(self, db, parent=None):
@@ -106,7 +108,7 @@ class MainWindow(QWidget):
             self.path_input.setText("Сборники")
             self.reload()
 
-        btn_1.clicked.connect(c_1)
+        btn_1.clicked.connect(lambda: path_module.set(self, "collections"))
         self.agregation_menu_layout.addWidget(btn_1)
         btn_2 = QPushButton("Авторы")
 
@@ -114,7 +116,7 @@ class MainWindow(QWidget):
             self.path_input.setText("Авторы")
             self.reload()
 
-        btn_2.clicked.connect(c_2)
+        btn_2.clicked.connect(lambda: path_module.set(self, "authors"))
         self.agregation_menu_layout.addWidget(btn_2)
 
         btn_3 = QPushButton("Книги")
@@ -123,7 +125,7 @@ class MainWindow(QWidget):
             self.path_input.setText("Книги")
             self.reload()
 
-        btn_3.clicked.connect(c_3)
+        btn_3.clicked.connect(lambda: path_module.set(self, "books"))
         self.agregation_menu_layout.addWidget(btn_3)
 
         # Меню настроек отображения
@@ -149,7 +151,7 @@ class MainWindow(QWidget):
         self.down_group.addWidget(self.tbl)  # Добавляем таблицу в нижнюю группу
         # self.tbl.setQuery("SELECT collection, numOfPages, COUNT(books.name) from collections LEFT JOIN books ON collections.id = books.collectionId GROUP BY collection")
         self.tbl.clicked.connect(
-            self.openCollectionByRow
+            self.tblClickRow
         )  # Подключаем обработчик нажатия на строчку
 
     def reload(self):
@@ -178,21 +180,28 @@ class MainWindow(QWidget):
         for ind, header in enumerate(v[1]):
             self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
 
-    def openCollectionByRow(self, v: QModelIndex):
-        path = self.path_input.text().split("/")
-        if (len(path) > 1 and path[0] != "Сборники") or path[0] not in requries.paths.keys():
+    def tblClickRow(self, v: QModelIndex):
+        getCol = lambda column: self.tbl.sqlModel.data(
+            self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
+        )
+        path_module.open(self, getCol(0))
+        return
+    """
+        path_module = self.path_input.text().split("/")
+        if (len(path_module) > 1 and path_module[0] != "Сборники") or path_module[0] not in requries.paths.keys():
             print(123243)
             return
         getCol = lambda column: self.tbl.sqlModel.data(
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
         )
-        self.path_input.setText(path[0] + "/" + getCol(0))
+        self.path_input.setText(path_module[0] + "/" + getCol(0))
         self.reload()
+        """
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    if not os.path.isfile("db1.db"):
+    if not os.path.isfile("db.db"):
         # Первый запуск
         i = InfoWindow()
         i.show()
