@@ -103,13 +103,24 @@ class MainWindow(QWidget):
         self.agregation_menu_layout.addWidget(btn_3)
 
         # Меню настроек отображения
+
+        # При открытии сборника...
         self.select_on_collection = RadioListWidget(
             "При открытии сборника:",
             ["Открывать список авторов", "Открывать список рассказов"],
-            lambda v: print(v),
         )
         # Добавляем в лейаут
         self.agregation_menu_layout.addLayout(self.select_on_collection)
+
+        # При открытии автора...
+
+        self.select_on_author = RadioListWidget(
+            "При открытии автора:",
+            ["Открывать список рассказов", "Открывать список сборников"],
+        )
+        # Добавляем в лейаут
+        self.agregation_menu_layout.addLayout(self.select_on_author)
+
         # Оставшееся место заполняем пустотой, чтобы сжать всё
         self.agregation_menu_layout.addStretch(1)
 
@@ -140,7 +151,17 @@ class MainWindow(QWidget):
         getCol = lambda column: self.tbl.sqlModel.data(
             self.tbl.sqlModel.index(v.row(), column), Qt.ItemDataRole.DisplayRole
         )
-        path_module.open(self, getCol(0))
+        name = getCol(0)
+        table = path_module._table
+        if path_module._args != []:
+            path_module.set(self, "books", [(table, name)] + path_module._args)
+            return
+        newName = (
+            ["authors", "books"][self.select_on_collection.getValue()]
+            if table == "collections"
+            else ["books", "collections"][self.select_on_author.getValue()]
+        )
+        path_module.set(self, newName, path_module._args + [(table, name)])
 
 
 if __name__ == "__main__":

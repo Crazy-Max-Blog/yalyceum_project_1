@@ -54,14 +54,3 @@ def set(self, tbl, args=[]):
         self.tbl.model().setHeaderData(ind, Qt_Horisontal, header)
 
     self.path_input.setText(getText())
-
-
-def open(self, name):
-    if _args == []:
-        new_table = "authors" if _table == "collections" else "collections"
-        new_arg = (_table, name)
-        set(self, new_table, [new_arg])
-    else:
-        new_table = "books"
-        new_arg = (_table, name)
-        set(self, new_table, [new_arg] + _args)
