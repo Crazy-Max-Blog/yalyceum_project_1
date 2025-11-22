@@ -1,0 +1,1 @@
+pyinstaller --onefile --add-data "info.html;." --windowed --name "HomeLibrary" --icon=icon.ico __main__.py
