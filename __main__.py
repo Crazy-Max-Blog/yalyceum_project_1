@@ -27,6 +27,8 @@ import queries
 
 import path_module
 
+from addData import AddDataWindow
+
 
 class MainWindow(QWidget):
     def __init__(self, db, parent=None):
@@ -65,7 +67,10 @@ class MainWindow(QWidget):
         add_btn = QPushButton("+")
         add_btn.setFixedSize(h, h)  # Делаем кнопку квадратной
         add_btn.setStyleSheet(styles.text_btn)  # Устанавливаем стиль
-        # add_btn.clicked.connect(lambda: self.w.adjustSize()) # Подключаем обработчик нажатия
+        def add():
+            self.windowAdd = AddDataWindow()
+            self.windowAdd.show()
+        add_btn.clicked.connect(add) # Подключаем обработчик нажатия
         path_layout.addWidget(add_btn)  # Добавляем кнопку в лейаут
 
         # Кнопка инфо
